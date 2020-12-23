@@ -13,3 +13,4 @@ RUN chown -R nobody.nobody /var/www/html && \
 WORKDIR /var/www/
 COPY ./composer.json /var/www/
 RUN composer install
+
