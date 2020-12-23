@@ -1,0 +1,7 @@
+vendor/
+node_modules/
+deploykey
+.env
+src/tmp/
+composer.lock
+composer.phar

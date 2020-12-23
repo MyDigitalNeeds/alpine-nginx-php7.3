@@ -1,0 +1,7 @@
+{
+    "require" : {
+        "php" : "^7.3",
+        "bigfootcms/auth": "^v1.0.6",
+        "sendgrid/sendgrid": "~7"
+    }
+}
