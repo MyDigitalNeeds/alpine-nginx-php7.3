@@ -14,3 +14,4 @@ WORKDIR /var/www/
 COPY ./composer.json /var/www/
 RUN composer install
 
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

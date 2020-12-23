@@ -17,7 +17,7 @@ Prerequisites
 
 I assume you have installed Docker and it is running.
 
-See the [Docker website](http://www.docker.io/gettingstarted/#h_installation) for installation instructions.
+See the [Docker website](https://www.docker.com/gettingstarted/) for installation instructions.
 
 Build
 -----
@@ -25,8 +25,6 @@ Build
 Steps to deploy your website locally:
 
 1. Copy the Dockerfile, docker-compose.yml, composer.json files into your project's root directory. (The files in configs/ are for your inspection but are not used in your project, so they are safe to discard)
-
-        git clone https://github.com/cb372/docker-sample.git
 
 2. Fetch a copy of your website's files and place them in the src/ directory.
 
