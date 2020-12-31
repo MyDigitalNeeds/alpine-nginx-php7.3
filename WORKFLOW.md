@@ -1,13 +1,11 @@
 # The Development Workflow Strategy
-### A general guide for building, testing and deploying applications with a system built around Docker, Gitlab and Caprover.
+### Stream your PHP development and deploy-to-production workflow with this modernized workflow strategy. Designed around Docker, Gitlab and a Docker Swarm managed with Caprover.
 
 ![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/nickmaietta/alpine-nginx-php73)
 
-In this work flow, you will work on your PHP website project lcoally on your machine, then push your committed changes to Gitlab. In turn, Caprover will be notified and will build a fresh container image of your project and deploy it for the world to see.
-
-In this workflow strategy, you will work on a local copy of your PHP website and commit your changes as you make progress in development. When you are satisfied with your changes and are ready to redeploy those changes, you will "push" your local commit history back to Gitlab where your project is centrally tracked. This "push" action will trigger a webhook that notifies Caprover that it's time to redeploy your application with the latest changes you've provided. The webhook will be triggered only for the "main" branch but nothing is stopping you from creating aditional branches for staging or a/b testing in a more advanced workflow. This guide outlines the deployment of the "main" branch to production only.
-
 Your Dev PC <-----> Gitlab <-----> Caprover -----> The World
+
+This workflow strategy is designed for the PHP developer but it can be applied to virtually any type of webiste or application development where your code is held in a central Git repository and deployed to a Docker Swarm using Caprover.
 
 Prerequisites
 -----
@@ -24,33 +22,46 @@ For Windows 10, Mac OS X and Linux Desktop users, the following open source tool
 SECURITY NOTICE:
   We will avoid the use of passwords to syncronize your project's code between your computer your hosted Git project. Instead of passwords, we use SSH Keypairs. If you have not already done so, you need to create an SSH identity that Gitlab will use to cryptographically identify your machine when pushing changes to your project's Git repository. To generate your keypair, open a suitable Terminal like Git Bash (you just instaled) and issue the following command to generate a ed25519 compatable keypair, providing your email address for the comment.
 
+  
+  Generating SSH Keys
+  -----
+  The task of creating SSH needs only be performed once per each machine you wish to work on your projects from. These keys will be used when your machine communicates with your project's hosted Git repository in Gitlab. If you have not already generated a public and private SSH keypair on your development machine, open a Git bash or other terminal and enter the following in:
+
   > ssh-keygen -t ed25519 -C "you@email.com"
 
-  The new keypair will be stored in a directory in your User's home directory called .ssh/. The contents of the .pub file must be coped into Gitlab. Navigate to your Gitlab Settings page to add your SSH public key.
+  Follow the prompts but take note of and leave the default file location path. Hitting enter you will be prompted to optionally provide a password. Once you've done this, a public and private file is saved.
+
+  The contents of the plain text ~/.ssh/ed25519.pub file is your public key. The entire text of this file needs to be added to your Gitlab account in the section called "SSH Keys".
+
+  PRO TIP: Linux users or Windows users using Git bash terminal can simply run the following command to copy the contents of the file directly to the clipboard:
+
+  > cat ~/.ssh/ed25519.pub | clip
+  
+** INSERT SCREEN GRAB HERE -- Show Gitlab Add SSH Key dialog ***
 
   For more information about generating and using Gitlab compatible SSH Keys, please take a look at https://docs.gitlab.com/ee/ssh/#ed25519-ssh-keys
 
-Setup your website's DNS
+Setting up your website's DNS
 -----
-Before you can deploy a live website, you will need to have a domain name pointed to the Name Servers that will be responsible for resolving hostnames to IP addresses. In this example, the domain name "**delnorteclassifieds.com**" is registered with Google Domains but we want to use StackPath as our DNS provider.
 
-In StackPath or other DNS provider, we need to create a new Zone for our domain and then create or edit the A record for the domain name. This "Answer" record needs to point to an IP address assigned by the system administrator. However, if your Domain Registrar happens to also be your DNS provider, a zone will already be available for you to modify. Is is almost certain your Domain Registrar will also offer free DNS servers but using them requires you leave default Name Servers unmodified.
+This step should be done early in your project setup to avoid wait time and it must be completed before you can attach the domain name to Caprover.
 
-While editing your zone, and if you will be adding the subdomain www, you can create a CNAME entry for it and point it to @. This is completely optional.
+If the project domain name's Registrar is also the DNS provider, you may never see the term "DNS Zone" mentioned in their control panel. Instead, you will likely see a section for editing DNS records directly, saving a step. However, if your DNS provider is seperate from your Domain Registrar, you may have to "Create" a zone before you can edit said zone record. This is often confusing to many people so it's worth the mention.
 
-The "naked" domain without the www or other subdomain can be referenced with an @ symbold. During initial testing, it's advised to set the TTL to a few minutes and adjust this number to a reasonable number when you are certain things are working as expected.
 
-To summarize, at minimum you will need an "A" type record with the name @ pointed to a valid IP address responsible for serving your website.
+At minimum, an A-type answer record for the "naked" domain name must be present in dns zone record, denoted an @ symbol and pointed to an IP address responsible for serving a copy of your website. During setup and testing, it is advised to set a low TTL value and adjust this to something more reasonable later after you've tested everything. It is also recommended that you add a CNAME entry with a name of "www" pointed to the naked domain, also denoted using @ for the designated value. This is because people will still have a habbit of publishing www as part of their address.
+
+PRO TIP: If your A record is given more than one IP address where your website can be reached, your DNS providers may automatically start taking latency measurements and serve DNS answers with the closest or fastest response time to those who are visitng your website. If your provider does not have these features or capabilities, then it is likely load balancing and DNS level fault tolerances will be handled with the very basic Round-robin method. See Wikipedia's entry discussing Round-robin DNS here: https://en.wikipedia.org/wiki/Round-robin_DNS.
+
+An example of the creation of a new Zone in Stackpath:
 
 ![Create or edit DNS zone](/gfx/workflow/create_zone.png)
 
-Typically with DNS providers, they will issue Name Servers after you create a zone record. These name servers will need to be provided to your Domain Registrar. In this example, Google Domains has been updated with the name servers as provided by StackPath.
+With your DNS zone record updated, it's time to set your name servers on the domain name if not already done. This is always done at the domain registrar. In this example, we set the name servers issued by StackPath, in the Google Domains control panel:
 
 ![Update your name servers](/gfx/workflow/set_nameservers.png)
 
-Once this action has been taken, you may be forced to wait a while for DNS to propogate across the internet. Typically the changes will happen within a few minutes but in some cases, your ISP, router or computer may "remember" a previous setting and won't look for the changes until the previous TTL number in minutes or hours has been reached. This is why we set TTL's low during testing.
-
-
+Just like DNS records themselves, Name Servers, once set, need time to propogate across the Internet. With name servers, they are referenced from the core "root servers" that hold the world's DNS system together so while unlikely, it is possible it coule take 24-48 hours for this name servers to become available worldwide and old DNS caches are no longer referencing old answer records. This here is proof the Internet does not revolve around you.
 
 Create A New App in Caprover
 -----
@@ -75,10 +86,38 @@ Leaving this browser tab open and reating an new one, we'll start the process of
 ![Gitlab stuff goes here](/gfx/workflow/caprover_method_3.png)
 
 
-
 Setting up a Project Repository
 -----
-At the center of our workflow is Git repositories. Gitlab is responsible for notifying Caprover about changes to your codebase.
+
+Your hosted Git project repository is at the center of the workflow. The role of Gitlab includes tracking changes to code, fostering collaboration and triggering other systems like Caprover that a new revision is ready for testing or publishing.
+
+If you haven't already done so, you will need to setup a new repository for your website in Gitlab. In my example, i've got a "Websites" group where key key staff can manage repositories as needed for clients. For projects requiring NDA's outside of our organization, we have a different working group for those where more restrictive access is configured. In our workflow we adopt a constistant project naming convention for websites, making use of the primary domain name used for that website. This name is similar in Caprover.
+
+A Gitlab project must exist before we can deploy an website in Caprover-- but to signal when a new revision of the website code is available for deployment we need to have Caprover issue a webhook that will get added to Gitlab. It's a bit of a who came first, the chicken or the egg? To make this task ab it easier, I recommend opening Gitlab in one browser tab and another tab pointed to Caprover.
+
+
+
+
+
+
+In Gitlab:
+
+- Create a new project if you haven't already done so.
+- Create a set of "deploy keys" in Git bash and distribute them
+
+* Generated Deployment Keys
+* Get URL of your project repository.
+
+In Caprover:
+
+
+
+
+- Create your app (do not enable persistant storage). Name the app the primary domain for your website, changing periods to dashes.
+- Attach your domain name(s) to the app and enable HTTPS.
+- Force HTTPS always and enable Websocket support.
+- In the Deployment tab for your app, find "Method 3".
+
 
 1) Visit your Gitlab server's web interface and setup a new project if you haven't already done so. Be sure to keep everything organized by creating assinginbg your project to the appropriate group. For example, a website could be in the group "Websites". If you will be creating a project from scratch, choose the option to add a README file so you can immediately clone this repository to your local machine.Follow the instructions most appropriate for your situation.
 
