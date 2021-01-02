@@ -10,18 +10,22 @@ This workflow strategy is designed for the PHP developer but it can be applied t
 Prerequisites
 -----
 
+Whether you are using Mac OS X, Linux or Windows 10 Home, Pro or Enterprise editions, this workflow has you covered. The following tools have been selected for cross-platform compatability, stability and community support and is highly recommend
+
+While this guide is designed for Mac OS X, Linux and Windows 10 users, the 
+
 For Windows 10 Home users, install Docker according to the most current instructions available at https://docs.docker.com/docker-for-windows/install-windows-home/.
 
 For Windows 10 Professional or Enterprise users, use https://docs.docker.com/docker-for-windows/install/.
 
+
+
 For Windows 10, Mac OS X and Linux Desktop users, the following open source tools are tested to work well:
-- Docker for Windows with WSL 2 enabled. - 
 - Git-SCM - https://git-scm.com/
 - VSCode Community Edition- https://code.visualstudio.com/download
 
 SECURITY NOTICE:
   We will avoid the use of passwords to syncronize your project's code between your computer your hosted Git project. Instead of passwords, we use SSH Keypairs. If you have not already done so, you need to create an SSH identity that Gitlab will use to cryptographically identify your machine when pushing changes to your project's Git repository. To generate your keypair, open a suitable Terminal like Git Bash (you just instaled) and issue the following command to generate a ed25519 compatable keypair, providing your email address for the comment.
-
   
   Generating SSH Keys
   -----

@@ -1,7 +1,9 @@
 FROM nickmaietta/alpine-nginx-php73:latest
 
+USER root
 RUN apk --no-cache add git composer
 
+USER nobody
 COPY src/ /var/www/html/
 
 # Make sure files/folders needed by the processes are accessable when they run under the nobody user
