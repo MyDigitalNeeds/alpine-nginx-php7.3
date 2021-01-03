@@ -1,6 +1,9 @@
 # The Development Workflow Strategy
 ### Stream your PHP development and deploy-to-production workflow with this modernized workflow strategy. Designed around Docker, Gitlab and a Docker Swarm managed with Caprover.
 
+STILL IN VERY ROUGH DRAFT
+___
+
 ![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/nickmaietta/alpine-nginx-php73)
 
 Your Dev PC <-----> Gitlab <-----> Caprover -----> The World
@@ -41,9 +44,20 @@ SECURITY NOTICE:
 
   > cat ~/.ssh/ed25519.pub | clip
   
-** INSERT SCREEN GRAB HERE -- Show Gitlab Add SSH Key dialog ***
+![Generate Key & Copy to Clipboard](/gfx/workflow/ssh_keygen_clip.png)
+
+Visit the Gitlab system and use the Search Bar to quickly find the "SSH Keys" page. Paste in your SSH key:
+
+![SSH Key is saved](/gfx/workflow/ssh-key-saved.png)
 
   For more information about generating and using Gitlab compatible SSH Keys, please take a look at https://docs.gitlab.com/ee/ssh/#ed25519-ssh-keys
+
+If you have not already done so, you need to set your name and email address in your global settings like so:
+
+        > git config --global user.name "Your Name"
+        > git config --global user.email "you@email.com"
+
+You should now be able to perform actions against your Git repository from the terminal.
 
 Setting up your website's DNS
 -----
@@ -51,7 +65,6 @@ Setting up your website's DNS
 This step should be done early in your project setup to avoid wait time and it must be completed before you can attach the domain name to Caprover.
 
 If the project domain name's Registrar is also the DNS provider, you may never see the term "DNS Zone" mentioned in their control panel. Instead, you will likely see a section for editing DNS records directly, saving a step. However, if your DNS provider is seperate from your Domain Registrar, you may have to "Create" a zone before you can edit said zone record. This is often confusing to many people so it's worth the mention.
-
 
 At minimum, an A-type answer record for the "naked" domain name must be present in dns zone record, denoted an @ symbol and pointed to an IP address responsible for serving a copy of your website. During setup and testing, it is advised to set a low TTL value and adjust this to something more reasonable later after you've tested everything. It is also recommended that you add a CNAME entry with a name of "www" pointed to the naked domain, also denoted using @ for the designated value. This is because people will still have a habbit of publishing www as part of their address.
 
@@ -79,7 +92,6 @@ Find your app in the list and click it's link. You should now see your app speci
 
 ![Connecting domains](/gfx/workflow/connect_domains.png)
 
-
 Once your domain is succefully added, you can "Enable HTTPS" to get your free SSL issued from LetsEncrypt.
 
 Now you can force HTTPS and turn on support for websockets, then Save those changes.
@@ -99,18 +111,19 @@ If you haven't already done so, you will need to setup a new repository for your
 
 A Gitlab project must exist before we can deploy an website in Caprover-- but to signal when a new revision of the website code is available for deployment we need to have Caprover issue a webhook that will get added to Gitlab. It's a bit of a who came first, the chicken or the egg? To make this task ab it easier, I recommend opening Gitlab in one browser tab and another tab pointed to Caprover.
 
+Create a Gitlab project if you haven't already done so:
 
+![Gitlab Create Project](/gfx/workflow/gitlab-create-project-1.png)
 
+Once created, you will want to choose the method called "Create a new repository". This process starts with cloning this new repository to your local machine so that yo can add yoru files and push the changes back here.
 
+Following this example, we clone the repo into the location where you will work on your projects. We will create a src/ directory and also a set up deploy keys:
 
+![Clone repo](/gfx/workflow/clone-repo.png)
 
-In Gitlab:
+Now create a deploy keypair:
 
-- Create a new project if you haven't already done so.
-- Create a set of "deploy keys" in Git bash and distribute them
-
-* Generated Deployment Keys
-* Get URL of your project repository.
+        > ssh-keygan -t rsa -c "deploy key"
 
 In Caprover:
 
